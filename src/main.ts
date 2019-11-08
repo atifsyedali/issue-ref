@@ -52,20 +52,19 @@ async function run() {
 
     const uniqueIssueNumbers = Array.from(new Set(issueNumbers))
 
-    const text = `This PR closes #${uniqueIssueNumbers.join(', closes #')} .`
+    const text = `This PR closes #${uniqueIssueNumbers.join(', closes #')}.`
 
     const client = new github.GitHub(token)
 
     if (modifyDescription) {
       let body = github.context.payload.pull_request!.body || ''
-      const beforeStartTag = body.substring(body.indexOf(ISSUES_START_TAG))
-      const indexOfEndTag = body.indexOf(ISSUES_END_TAG)
-      if (indexOfEndTag > 0) {
-        body =
-          beforeStartTag + body.substring(indexOfEndTag + ISSUES_END_TAG.length)
-      } else {
-        body = beforeStartTag
-      }
+      body = body.replace(
+        new RegExp(
+          `\\n\\n${ISSUES_START_TAG}[\\w\\W\\s\\S]*${ISSUES_END_TAG}`,
+          'g'
+        ),
+        ''
+      )
 
       body += '\n\n' + ISSUES_START_TAG + text + ISSUES_END_TAG
 
